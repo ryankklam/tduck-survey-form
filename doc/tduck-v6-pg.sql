@@ -1,16 +1,10 @@
 -- ================================================================
 -- TDuck Platform v6 - PostgreSQL Database Schema
--- 基于 tduck-v6.sql (MySQL) 转换而来
--- 适配：PostgreSQL 13+ / Neon / Supabase 等
+-- 适配：PostgreSQL 13+ / Neon / Supabase
 -- ================================================================
 
--- 扩展（如使用 uuid-ossp 可取消注释）
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- ================================================================
--- Table structure for ac_user
--- ================================================================
-DROP TABLE IF EXISTS ac_user CASCADE;
+-- 1. ac_user
+DROP TABLE IF EXISTS ac_user;
 CREATE TABLE ac_user (
     id                  BIGSERIAL PRIMARY KEY,
     name                VARCHAR(32)     NOT NULL DEFAULT '',
@@ -28,23 +22,15 @@ CREATE TABLE ac_user (
     create_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time         TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE  ac_user IS '用户表';
-COMMENT ON COLUMN ac_user.name IS '姓名';
-COMMENT ON COLUMN ac_user.gender IS '性别：0未知 1男 2女';
-COMMENT ON COLUMN ac_user.deleted IS '状态 0正常 1删除';
-
 INSERT INTO ac_user (id, name, avatar, gender, email, phone_number, password, reg_channel,
                      last_login_channel, last_login_time, last_login_ip, password_type, deleted,
                      create_time, update_time)
 VALUES (1, 'admin', '', 1, 'admin@tduckcloud.com', NULL, '$2a$10$FgOTdkh3qVLE9DNgD4XzDu2PCJB3QtnGbriBPaMhMKTVWM9XYsiIm',
         '1', 2, '2023-04-06 09:35:22', '172.17.0.1', 1, 0, '2021-06-13 13:49:25', '2023-04-06 09:35:22');
-
 SELECT setval('ac_user_id_seq', (SELECT MAX(id) FROM ac_user));
 
--- ================================================================
--- Table structure for ac_user_authorize
--- ================================================================
-DROP TABLE IF EXISTS ac_user_authorize CASCADE;
+-- 2. ac_user_authorize
+DROP TABLE IF EXISTS ac_user_authorize;
 CREATE TABLE ac_user_authorize (
     id          BIGSERIAL PRIMARY KEY,
     type        SMALLINT        NOT NULL,
@@ -52,18 +38,14 @@ CREATE TABLE ac_user_authorize (
     open_id     VARCHAR(150)    NOT NULL,
     user_name   VARCHAR(255)    NOT NULL,
     user_id     BIGINT,
-    user_info   JSONB,
+    user_info   JSON,
     create_time TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_open_id_type UNIQUE (open_id, type)
 );
-COMMENT ON TABLE ac_user_authorize IS '第三方用户授权信息';
-COMMENT ON COLUMN ac_user_authorize.type IS '第三方平台类型';
 
--- ================================================================
--- Table structure for ac_user_token
--- ================================================================
-DROP TABLE IF EXISTS ac_user_token CASCADE;
+-- 3. ac_user_token
+DROP TABLE IF EXISTS ac_user_token;
 CREATE TABLE ac_user_token (
     id          BIGSERIAL PRIMARY KEY,
     type        INTEGER         NOT NULL DEFAULT 0,
@@ -74,13 +56,9 @@ CREATE TABLE ac_user_token (
     update_time TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_token UNIQUE (token)
 );
-COMMENT ON TABLE ac_user_token IS '用户Token表';
-COMMENT ON COLUMN ac_user_token.type IS '类型';
 
--- ================================================================
--- Table structure for fm_form_template
--- ================================================================
-DROP TABLE IF EXISTS fm_form_template CASCADE;
+-- 4. fm_form_template
+DROP TABLE IF EXISTS fm_form_template;
 CREATE TABLE fm_form_template (
     id          BIGSERIAL PRIMARY KEY,
     form_key    VARCHAR(50)     NOT NULL,
@@ -88,19 +66,14 @@ CREATE TABLE fm_form_template (
     name        TEXT            NOT NULL,
     description TEXT,
     category_id INTEGER         NOT NULL,
-    scheme      JSONB,
+    scheme      JSON,
     status      SMALLINT        NOT NULL DEFAULT 0,
     update_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE fm_form_template IS '表单模板';
-COMMENT ON COLUMN fm_form_template.form_key IS '模板唯一标识';
-COMMENT ON COLUMN fm_form_template.status IS '状态';
 
--- ================================================================
--- Table structure for fm_form_template_category
--- ================================================================
-DROP TABLE IF EXISTS fm_form_template_category CASCADE;
+-- 5. fm_form_template_category
+DROP TABLE IF EXISTS fm_form_template_category;
 CREATE TABLE fm_form_template_category (
     id          BIGSERIAL PRIMARY KEY,
     name        VARCHAR(50)     NOT NULL,
@@ -108,12 +81,9 @@ CREATE TABLE fm_form_template_category (
     update_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE fm_form_template_category IS '模板分类';
 
--- ================================================================
--- Table structure for fm_form_theme
--- ================================================================
-DROP TABLE IF EXISTS fm_form_theme CASCADE;
+-- 6. fm_form_theme
+DROP TABLE IF EXISTS fm_form_theme;
 CREATE TABLE fm_form_theme (
     id              BIGSERIAL PRIMARY KEY,
     name            VARCHAR(50)     NOT NULL,
@@ -124,13 +94,9 @@ CREATE TABLE fm_form_theme (
     update_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE fm_form_theme IS '主题外观模板';
-COMMENT ON COLUMN fm_form_theme.style IS '主题风格';
 
--- ================================================================
--- Table structure for fm_form_theme_category
--- ================================================================
-DROP TABLE IF EXISTS fm_form_theme_category CASCADE;
+-- 7. fm_form_theme_category
+DROP TABLE IF EXISTS fm_form_theme_category;
 CREATE TABLE fm_form_theme_category (
     id          BIGSERIAL PRIMARY KEY,
     name        VARCHAR(50)     NOT NULL,
@@ -138,12 +104,9 @@ CREATE TABLE fm_form_theme_category (
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE fm_form_theme_category IS '主题分类';
 
--- ================================================================
--- Table structure for fm_user_form
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form CASCADE;
+-- 8. fm_user_form
+DROP TABLE IF EXISTS fm_user_form;
 CREATE TABLE fm_user_form (
     id          BIGSERIAL PRIMARY KEY,
     form_key    VARCHAR(50)     NOT NULL,
@@ -161,62 +124,47 @@ CREATE TABLE fm_user_form (
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_form_key UNIQUE (form_key)
 );
-COMMENT ON TABLE fm_user_form IS '用户表单';
-COMMENT ON COLUMN fm_user_form.form_key IS '表单唯一标识';
-COMMENT ON COLUMN fm_user_form.is_deleted IS '是否删除 0否 1是';
-COMMENT ON COLUMN fm_user_form.is_folder IS '是否文件夹';
-
 CREATE INDEX idx_fm_user_form_user_id ON fm_user_form(user_id);
 
--- ================================================================
--- Table structure for fm_user_form_auth
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_auth CASCADE;
+-- 9. fm_user_form_auth
+DROP TABLE IF EXISTS fm_user_form_auth;
 CREATE TABLE fm_user_form_auth (
     id              BIGSERIAL PRIMARY KEY,
     form_key        VARCHAR(50)     NOT NULL,
     auth_group_id   BIGINT,
-    user_id_list    JSONB,
-    role_id_list    JSONB,
-    dept_id_list    JSONB,
+    user_id_list    JSON,
+    role_id_list    JSON,
+    dept_id_list    JSON,
     update_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_form_key_auth_group UNIQUE (form_key, auth_group_id)
 );
-COMMENT ON TABLE fm_user_form_auth IS '表单授权对象';
 
--- ================================================================
--- Table structure for fm_user_form_data
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_data CASCADE;
+-- 10. fm_user_form_data
+DROP TABLE IF EXISTS fm_user_form_data;
 CREATE TABLE fm_user_form_data (
     id                  BIGSERIAL PRIMARY KEY,
     form_key            VARCHAR(100)    NOT NULL,
     serial_number       INTEGER,
-    original_data       JSONB,
-    submit_ua           JSONB,
+    original_data       JSON,
+    submit_ua           JSON,
     submit_os           VARCHAR(50),
     submit_browser      VARCHAR(50),
     submit_request_ip   VARCHAR(50),
     submit_address      VARCHAR(50),
     complete_time       INTEGER,
     wx_open_id          VARCHAR(100),
-    wx_user_info        JSONB,
+    wx_user_info        JSON,
     ext_value           VARCHAR(255),
     create_time         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_by           VARCHAR(255),
     update_time         TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     update_by           VARCHAR(255)
 );
-COMMENT ON TABLE fm_user_form_data IS '表单收集数据结果';
-COMMENT ON COLUMN fm_user_form_data.form_key IS '表单key';
-
 CREATE INDEX idx_fm_user_form_data_form_key ON fm_user_form_data(form_key);
 
--- ================================================================
--- Table structure for fm_user_form_item
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_item CASCADE;
+-- 11. fm_user_form_item
+DROP TABLE IF EXISTS fm_user_form_item;
 CREATE TABLE fm_user_form_item (
     id              BIGSERIAL PRIMARY KEY,
     form_key        VARCHAR(100)    NOT NULL,
@@ -232,50 +180,37 @@ CREATE TABLE fm_user_form_item (
     placeholder     VARCHAR(255),
     sort            BIGINT          DEFAULT 0,
     span            INTEGER         NOT NULL DEFAULT 24,
-    scheme          JSONB,
-    reg_list        JSONB,
+    scheme          JSON,
+    reg_list        JSON,
     update_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE fm_user_form_item IS '表单项';
-COMMENT ON COLUMN fm_user_form_item.is_display_type IS '展示类型组件';
-COMMENT ON COLUMN fm_user_form_item.is_hide_type IS '隐藏类型组件';
-COMMENT ON COLUMN fm_user_form_item.is_special_type IS '特殊处理类型';
-
 CREATE INDEX idx_fm_user_form_item_form_key ON fm_user_form_item(form_key);
 
--- ================================================================
--- Table structure for fm_user_form_logic
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_logic CASCADE;
+-- 12. fm_user_form_logic
+DROP TABLE IF EXISTS fm_user_form_logic;
 CREATE TABLE fm_user_form_logic (
     id          BIGSERIAL PRIMARY KEY,
     form_key    VARCHAR(100)    NOT NULL,
-    scheme      JSONB,
+    scheme      JSON,
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_logic_form_key UNIQUE (form_key)
 );
-COMMENT ON TABLE fm_user_form_logic IS '表单逻辑';
 
--- ================================================================
--- Table structure for fm_user_form_setting
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_setting CASCADE;
+-- 13. fm_user_form_setting
+DROP TABLE IF EXISTS fm_user_form_setting;
 CREATE TABLE fm_user_form_setting (
     id          BIGSERIAL PRIMARY KEY,
     form_key    VARCHAR(100)    NOT NULL,
-    settings    JSONB,
+    settings    JSON,
     update_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_setting_form_key UNIQUE (form_key)
 );
-COMMENT ON TABLE fm_user_form_setting IS '表单设置表';
 
--- ================================================================
--- Table structure for fm_user_form_theme
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_theme CASCADE;
+-- 14. fm_user_form_theme
+DROP TABLE IF EXISTS fm_user_form_theme;
 CREATE TABLE fm_user_form_theme (
     id               BIGSERIAL PRIMARY KEY,
     form_key         VARCHAR(100)    NOT NULL,
@@ -294,12 +229,9 @@ CREATE TABLE fm_user_form_theme (
     create_time      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_theme_form_key UNIQUE (form_key)
 );
-COMMENT ON TABLE fm_user_form_theme IS '表单主题配置';
 
--- ================================================================
--- Table structure for fm_user_form_view_count
--- ================================================================
-DROP TABLE IF EXISTS fm_user_form_view_count CASCADE;
+-- 15. fm_user_form_view_count
+DROP TABLE IF EXISTS fm_user_form_view_count;
 CREATE TABLE fm_user_form_view_count (
     id          BIGSERIAL PRIMARY KEY,
     form_key    VARCHAR(50)     NOT NULL,
@@ -308,39 +240,28 @@ CREATE TABLE fm_user_form_view_count (
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uk_view_form_key UNIQUE (form_key)
 );
-COMMENT ON TABLE fm_user_form_view_count IS '用户表单查看次数';
 
--- ================================================================
--- Table structure for sys_env_config
--- ================================================================
-DROP TABLE IF EXISTS sys_env_config CASCADE;
+-- 16. sys_env_config
+DROP TABLE IF EXISTS sys_env_config;
 CREATE TABLE sys_env_config (
     id          BIGSERIAL PRIMARY KEY,
     env_key     VARCHAR(100)    NOT NULL DEFAULT '',
-    env_value   JSONB           NOT NULL,
+    env_value   JSON            NOT NULL,
     update_time TIMESTAMP,
     create_time TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE sys_env_config IS '系统环境配置表';
-COMMENT ON COLUMN sys_env_config.env_key IS '配置key';
-COMMENT ON COLUMN sys_env_config.env_value IS '参数键值';
-
 INSERT INTO sys_env_config (id, env_key, env_value, update_time, create_time)
 VALUES (9, 'systemInfoConfig',
-        '{"webBaseUrl": "", "openWxMpLogin": false}'::jsonb,
+        CAST('{"webBaseUrl": "", "openWxMpLogin": false}' AS JSON),
         '2023-04-04 14:33:29', '2023-04-06 21:19:21');
-
 INSERT INTO sys_env_config (id, env_key, env_value, update_time, create_time)
 VALUES (14, 'fileEnvConfig',
-        '{"ossType": "LOCAL"}'::jsonb,
+        CAST('{"ossType": "LOCAL"}' AS JSON),
         '2023-03-26 14:34:38', '2023-04-04 22:48:43');
-
 SELECT setval('sys_env_config_id_seq', (SELECT MAX(id) FROM sys_env_config));
 
--- ================================================================
--- Table structure for wx_mp_user
--- ================================================================
-DROP TABLE IF EXISTS wx_mp_user CASCADE;
+-- 17. wx_mp_user
+DROP TABLE IF EXISTS wx_mp_user;
 CREATE TABLE wx_mp_user (
     id           SERIAL PRIMARY KEY,
     appid        VARCHAR(255)    NOT NULL,
@@ -357,16 +278,11 @@ CREATE TABLE wx_mp_user (
     update_time  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
     create_time  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE wx_mp_user IS '微信公众号用户';
-COMMENT ON COLUMN wx_mp_user.is_subscribe IS '是否关注';
-
 CREATE INDEX idx_wx_mp_user_union_id ON wx_mp_user(union_id);
 CREATE INDEX idx_wx_mp_user_open_id ON wx_mp_user(open_id);
 
--- ================================================================
--- Table structure for webhook_config
--- ================================================================
-DROP TABLE IF EXISTS webhook_config CASCADE;
+-- 18. webhook_config
+DROP TABLE IF EXISTS webhook_config;
 CREATE TABLE webhook_config (
     id              BIGSERIAL PRIMARY KEY,
     hook_name       VARCHAR(50),
@@ -379,15 +295,10 @@ CREATE TABLE webhook_config (
     create_time     TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time     TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE webhook_config IS 'Webhook配置表';
-COMMENT ON COLUMN webhook_config.request_type IS 'Webhook请求类型，如POST、GET等';
-
 CREATE INDEX idx_webhook_config_source ON webhook_config(source_type, source_id);
 
--- ================================================================
--- Table structure for webhook_event
--- ================================================================
-DROP TABLE IF EXISTS webhook_event CASCADE;
+-- 19. webhook_event
+DROP TABLE IF EXISTS webhook_event;
 CREATE TABLE webhook_event (
     id                BIGSERIAL PRIMARY KEY,
     webhook_config_id BIGINT          NOT NULL,
@@ -400,9 +311,6 @@ CREATE TABLE webhook_event (
     create_time       TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     update_time       TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-COMMENT ON TABLE webhook_event IS 'Webhook事件表';
-COMMENT ON COLUMN webhook_event.status IS 'Webhook事件状态，如pending、success、failed等';
-
 CREATE INDEX idx_webhook_event_config ON webhook_event(webhook_config_id);
 
 -- ================================================================
