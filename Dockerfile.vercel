@@ -6,7 +6,7 @@ COPY . .
 
 RUN mvn clean package -DskipTests -pl tduck-api -am
 
-FROM openjdk:8-jdk-alpine
+FROM amazoncorretto:8-alpine3.19-jre
 
 RUN apk add --no-cache ttf-dejavu fontconfig tzdata
 
