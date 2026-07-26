@@ -120,7 +120,9 @@ public class QueryWrapperUtils {
         }
         Assert.isFalse(SqlInjectionUtils.check(beginTime) || !DATE_TIME_PATTERN.matcher(beginTime).matches(), "参数异常");
         Assert.isFalse(SqlInjectionUtils.check(endTime) || !DATE_TIME_PATTERN.matcher(endTime).matches(), "参数异常");
-        String lastSql = StrUtil.format("  date_format(create_time,'%y%m%d') >= date_format('{}','%y%m%d') AND date_format(create_time,'%y%m%d') <= date_format('{}','%y%m%d')",
+        String dateFormatExpr = DbDialectUtils.dateFormat("create_time", "%y%m%d");
+        String dateFormatParam = DbDialectUtils.dateFormat("'{}'", "%y%m%d");
+        String lastSql = StrUtil.format("  " + dateFormatExpr + " >= " + dateFormatParam + " AND " + dateFormatExpr + " <= " + dateFormatParam,
                 beginTime, endTime);
         return lastSql;
     }

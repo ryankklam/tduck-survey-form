@@ -12,7 +12,7 @@ spring:
       idle-timeout: 30000
       pool-name: DatebookHikariCP
       max-lifetime: 1800000
-      connection-test-query: SELECT 1 FROM DUAL
+      connection-test-query: SELECT 1
   mail:
     host: smtp.163.com
     username: test@163.com  # 邮箱账号
