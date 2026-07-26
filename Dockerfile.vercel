@@ -8,7 +8,7 @@ RUN mvn clean package -DskipTests -pl tduck-api -am
 
 FROM amazoncorretto:8-alpine3.19-jre
 
-RUN apk add --no-cache ttf-dejavu fontconfig tzdata
+RUN apk add --no-cache ttf-dejavu fontconfig tzdata curl
 
 ENV TZ=Asia/Shanghai
 
@@ -18,4 +18,4 @@ COPY --from=builder /build/tduck-api/target/tduck-api.jar application.jar
 
 EXPOSE 8999
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Duser.language=zh -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom -jar application.jar --server.port=${PORT:-8999}"]
+CMD ["sh", "-c", "java $JAVA_OPTS -Duser.language=zh -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom -jar application.jar --server.port=${PORT} --server.address=0.0.0.0"]
