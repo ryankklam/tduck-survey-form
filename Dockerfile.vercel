@@ -18,4 +18,4 @@ COPY --from=builder /build/tduck-api/target/tduck-api.jar application.jar
 
 EXPOSE 8999
 
-CMD ["sh", "-c", "echo \"[VERCEL] PORT=$PORT, JAVA_OPTS=$JAVA_OPTS\" && exec java $JAVA_OPTS -Duser.language=zh -XX:+UseG1GC -Djava.security.egd=file:/dev/./urandom -jar application.jar --server.port=${PORT:-8999} --server.address=0.0.0.0"]
+CMD ["sh", "-c", "echo \"[VERCEL] PORT=$PORT, JAVA_OPTS=$JAVA_OPTS\" && exec java $JAVA_OPTS -Duser.language=zh -XX:+UseG1GC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -noverify -Djava.security.egd=file:/dev/./urandom -Dspring.main.lazy-initialization=true -jar application.jar --server.port=${PORT} --server.address=0.0.0.0"]
