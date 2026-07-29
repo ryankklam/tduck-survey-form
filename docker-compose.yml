@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # ====== MySQL 数据库 ======
+  mysql:
+    image: mysql:8.0
+    container_name: tduck-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: tduck
+      MYSQL_USER: tduck
+      MYSQL_PASSWORD: tduck123
+      TZ: Asia/Shanghai
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./doc/tduck-v6.sql:/docker-entrypoint-initdb.d/init.sql
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ====== TDuck 应用 ======
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tduck-app
+    restart: unless-stopped
+    ports:
+      - "8999:8999"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/tduck?useSSL=false&useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&tinyInt1isBit=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: com.mysql.cj.jdbc.Driver
+      JAVA_OPTS: -Xmx512m -Xms256m
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - app_logs:/application/logs
+
+volumes:
+  mysql_data:
+  app_logs:
